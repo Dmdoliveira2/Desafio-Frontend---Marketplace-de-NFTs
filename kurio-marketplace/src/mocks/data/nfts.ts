@@ -1,14 +1,14 @@
 import type { Nft } from "../../types/nft";
 
-import emeraldApe from "../../assets/nfts/NFT Artwork 03.png";
-import sageNomad from "../../assets/nfts/NFT Artwork 04.png";
-import neonVessel from "../../assets/nfts/NFT Artwork 05.png";
-import cosmicBloom from "../../assets/nfts/NFT Artwork 06.png";
-import violetNomad from "../../assets/nfts/NFT Artwork 07.png";
-import ivoryBaron from "../../assets/nfts/NFT Artwork 08.png";
-import goldenBeat from "../../assets/nfts/NFT Artwork 09.png";
-import goldenFrequency from "../../assets/nfts/NFT Artwork 10.png";
-import goldenSignal from "../../assets/nfts/NFT Artwork 11.png";
+import emeraldApe from "../../assets/nfts/NFT Artwork 03.webp";
+import sageNomad from "../../assets/nfts/NFT Artwork 04.webp";
+import neonVessel from "../../assets/nfts/NFT Artwork 05.webp";
+import cosmicBloom from "../../assets/nfts/NFT Artwork 06.webp";
+import violetNomad from "../../assets/nfts/NFT Artwork 07.webp";
+import ivoryBaron from "../../assets/nfts/NFT Artwork 08.webp";
+import goldenBeat from "../../assets/nfts/NFT Artwork 09.webp";
+import goldenFrequency from "../../assets/nfts/NFT Artwork 10.webp";
+import goldenSignal from "../../assets/nfts/NFT Artwork 11.webp";
 
 export const nfts: Nft[] = [
   {

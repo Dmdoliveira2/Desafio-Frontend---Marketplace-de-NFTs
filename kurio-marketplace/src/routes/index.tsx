@@ -38,10 +38,9 @@ function Home() {
         />
 
         <div className="flex-1">
-          <h1 className="text-2xl font-bold mb-6">
+          <h2 className="text-2xl font-bold mb-6">
             {category ? `NFTs — ${category}` : "Todos os NFTs"}
-          </h1>
-
+          </h2>
           {isLoading && <p>Carregando...</p>}
           {isError && <p>Erro ao carregar NFTs.</p>}
 

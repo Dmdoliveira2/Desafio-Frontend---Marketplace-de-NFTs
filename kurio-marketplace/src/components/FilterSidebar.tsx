@@ -17,7 +17,7 @@ export function FilterSidebar({
 }: FilterSidebarProps) {
   return (
     <aside className="w-full md:w-64 shrink-0">
-      <h3 className="font-bold mb-4">Coleções</h3>
+      <h2 className="font-bold mb-4">Coleções</h2>
       <ul className="space-y-2 text-sm">
         {categories.map((cat) => (
           <li key={cat.name}>
