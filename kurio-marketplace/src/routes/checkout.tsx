@@ -60,21 +60,41 @@ function Checkout() {
       <div>
         <h1 className="text-2xl font-bold mb-6">Perfil do colecionador</h1>
         <div className="space-y-4">
-          <input
-            defaultValue={user.username}
-            placeholder="Nome de exibição"
-            className="w-full bg-surface p-3 border border-text-muted/30"
-          />
-          <input
-            defaultValue={user.email}
-            placeholder="E-mail"
-            className="w-full bg-surface p-3 border border-text-muted/30"
-          />
-          <select className="w-full bg-surface p-3 border border-text-muted/30">
-            <option>MetaMask</option>
-            <option>Coinbase Wallet</option>
-            <option>WalletConnect</option>
-          </select>
+          <div>
+            <label htmlFor="displayName" className="block text-sm mb-1">
+              Nome de exibição
+            </label>
+            <input
+              id="displayName"
+              defaultValue={user.username}
+              className="w-full bg-surface p-3 border border-text-muted/30"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm mb-1">
+              E-mail
+            </label>
+            <input
+              id="email"
+              defaultValue={user.email}
+              className="w-full bg-surface p-3 border border-text-muted/30"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="wallet" className="block text-sm mb-1">
+              Carteira
+            </label>
+            <select
+              id="wallet"
+              className="w-full bg-surface p-3 border border-text-muted/30"
+            >
+              <option>MetaMask</option>
+              <option>Coinbase Wallet</option>
+              <option>WalletConnect</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -106,7 +126,7 @@ function Checkout() {
           </div>
 
           {orderMutation.isError && (
-            <p className="text-red-400 text-sm mt-4">
+            <p role="alert" className="text-red-400 text-sm mt-4">
               Erro ao confirmar compra. Tente novamente.
             </p>
           )}
@@ -114,7 +134,7 @@ function Checkout() {
           <button
             onClick={() => orderMutation.mutate()}
             disabled={orderMutation.isPending}
-            className="w-full mt-6 bg-accent text-background py-3 font-medium disabled:opacity-50"
+            className="w-full mt-6 bg-accent text-background py-3 font-medium rounded-lg disabled:opacity-50"
           >
             {orderMutation.isPending ? "Processando..." : "Confirmar compra"}
           </button>

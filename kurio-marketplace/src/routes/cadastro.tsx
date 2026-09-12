@@ -42,42 +42,69 @@ function Cadastro() {
       <h1 className="text-xl font-bold text-center mb-6">Criar conta</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Nome de usuário"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          className="w-full bg-background p-3 border border-text-muted/30"
-        />
-        <input
-          type="email"
-          placeholder="Digite seu e-mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full bg-background p-3 border border-text-muted/30"
-        />
-        <input
-          type="password"
-          placeholder="Senha"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          className="w-full bg-background p-3 border border-text-muted/30"
-        />
-        <input
-          type="password"
-          placeholder="Confirmar senha"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          className="w-full bg-background p-3 border border-text-muted/30"
-        />
+        <div>
+          <label htmlFor="username" className="block text-sm mb-1">
+            Nome de usuário
+          </label>
+          <input
+            id="username"
+            type="text"
+            placeholder="Nome de usuário"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            className="w-full bg-background p-3 border border-text-muted/30"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm mb-1">
+            E-mail
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="Digite seu e-mail"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full bg-background p-3 border border-text-muted/30"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm mb-1">
+            Senha
+          </label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            className="w-full bg-background p-3 border border-text-muted/30"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className="block text-sm mb-1">
+            Confirmar senha
+          </label>
+          <input
+            id="confirmPassword"
+            type="password"
+            placeholder="Confirmar senha"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className="w-full bg-background p-3 border border-text-muted/30"
+          />
+        </div>
 
         {(validationError || registerMutation.isError) && (
-          <p className="text-red-400 text-sm">
+          <p role="alert" className="text-red-400 text-sm">
             {validationError || "E-mail já cadastrado."}
           </p>
         )}
@@ -85,7 +112,7 @@ function Cadastro() {
         <button
           type="submit"
           disabled={registerMutation.isPending}
-          className="w-full bg-accent text-background py-3 font-medium disabled:opacity-50"
+          className="w-full bg-accent text-background py-3 font-medium rounded-lg disabled:opacity-50"
         >
           {registerMutation.isPending ? "Criando..." : "Criar conta"}
         </button>
