@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchNftById } from "../api/nfts";
 import { addToCart } from "../api/cart";
+import { useSocket } from "../lib/useSocket";
 
 export const Route = createFileRoute("/nft/$id")({
   component: NftDetail,
@@ -20,6 +21,8 @@ function NftDetail() {
     queryFn: () => fetchNftById(id),
     retry: false,
   });
+
+  const socket = useSocket();
 
   const addToCartMutation = useMutation({
     mutationFn: () => addToCart(id, 1),
@@ -67,6 +70,12 @@ function NftDetail() {
             : addToCartMutation.isSuccess
               ? "ADICIONADO ✓"
               : "COMPRAR"}
+        </button>
+        <button
+          onClick={() => socket.emit("simulate:nft-update", id)}
+          className="mt-2 text-xs text-text-muted underline"
+        >
+          [TESTE] Simular mudança de preço
         </button>
       </div>
     </div>

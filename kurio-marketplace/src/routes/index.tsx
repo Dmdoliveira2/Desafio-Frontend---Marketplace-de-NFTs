@@ -2,27 +2,59 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNfts } from "../api/nfts";
 import { NftCard } from "../components/NftCard";
+import { Hero } from "../components/Hero";
+import { FilterSidebar } from "../components/FilterSidebar";
 
 export const Route = createFileRoute("/")({
   component: Home,
+  validateSearch: (search: Record<string, unknown>) => ({
+    category: (search.category as string) ?? null,
+  }),
 });
 
 function Home() {
+  const { category } = Route.useSearch();
+  const navigate = Route.useNavigate();
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["nfts"],
     queryFn: fetchNfts,
   });
 
-  if (isLoading) return <div className="p-8">Carregando...</div>;
-  if (isError) return <div className="p-8">Erro ao carregar NFTs.</div>;
+  const filteredItems = category
+    ? data?.items.filter((nft) => nft.category === category)
+    : data?.items;
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Todos os NFTs</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {data?.items.map((nft) => (
-          <NftCard key={nft.id} nft={nft} />
-        ))}
+    <div>
+      <Hero />
+
+      <div className="flex flex-col md:flex-row gap-8 px-8 pb-12">
+        <FilterSidebar
+          selectedCategory={category}
+          onSelectCategory={(cat) => navigate({ search: { category: cat } })}
+        />
+
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold mb-6">
+            {category ? `NFTs — ${category}` : "Todos os NFTs"}
+          </h1>
+
+          {isLoading && <p>Carregando...</p>}
+          {isError && <p>Erro ao carregar NFTs.</p>}
+
+          {!isLoading && filteredItems?.length === 0 && (
+            <p className="text-text-muted">
+              Nenhum NFT encontrado nessa categoria.
+            </p>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredItems?.map((nft) => (
+              <NftCard key={nft.id} nft={nft} />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

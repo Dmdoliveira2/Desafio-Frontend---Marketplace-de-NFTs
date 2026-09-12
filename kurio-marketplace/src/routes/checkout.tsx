@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchCart } from "../api/cart";
 import { createOrder } from "../api/orders";
 import { useAuth } from "../lib/AuthContext";
+import { useSocket } from "../lib/useSocket";
 
 export const Route = createFileRoute("/checkout")({
   component: Checkout,
@@ -12,6 +13,7 @@ function Checkout() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const socket = useSocket();
 
   const { data, isLoading } = useQuery({
     queryKey: ["cart"],
@@ -22,6 +24,7 @@ function Checkout() {
     mutationFn: createOrder,
     onSuccess: (order) => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
+      socket.emit("simulate:order-update", order.id);
       navigate({ to: "/confirmacao", search: { orderId: order.id } });
     },
   });

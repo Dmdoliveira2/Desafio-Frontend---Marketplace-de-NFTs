@@ -8,7 +8,7 @@ interface NftCardProps {
 export function NftCard({ nft }: NftCardProps) {
   return (
     <Link to="/nft/$id" params={{ id: nft.id }} className="block">
-      <div className="bg-surface overflow-hidden group cursor-pointer">
+      <div className="bg-surface overflow-hidden group cursor-pointer rounded-lg">
         <div className="relative aspect-square bg-[#eee5d3]">
           <img
             src={nft.image}

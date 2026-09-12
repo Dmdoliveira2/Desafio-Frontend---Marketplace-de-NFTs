@@ -25,6 +25,8 @@ export function Header() {
         >
           Mercado
         </Link>
+        <span className="text-text-muted">Criadores</span>
+        <span className="text-text-muted">Aprenda</span>
         <Link
           to="/carrinho"
           className="hover:text-accent"
