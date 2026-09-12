@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MercadoRouteImport } from './routes/mercado'
+import { Route as NftIdRouteImport } from './routes/nft.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const MercadoRoute = MercadoRouteImport.update({
   path: '/mercado',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NftIdRoute = NftIdRouteImport.update({
+  id: '/nft/$id',
+  path: '/nft/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mercado': typeof MercadoRoute
+  '/nft/$id': typeof NftIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mercado': typeof MercadoRoute
+  '/nft/$id': typeof NftIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mercado': typeof MercadoRoute
+  '/nft/$id': typeof NftIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/mercado'
+  fullPaths: '/' | '/mercado' | '/nft/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mercado'
-  id: '__root__' | '/' | '/mercado'
+  to: '/' | '/mercado' | '/nft/$id'
+  id: '__root__' | '/' | '/mercado' | '/nft/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MercadoRoute: typeof MercadoRoute
+  NftIdRoute: typeof NftIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MercadoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nft/$id': {
+      id: '/nft/$id'
+      path: '/nft/$id'
+      fullPath: '/nft/$id'
+      preLoaderRoute: typeof NftIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MercadoRoute: MercadoRoute,
+  NftIdRoute: NftIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
