@@ -7,8 +7,8 @@ import { FilterSidebar } from "../components/FilterSidebar";
 
 export const Route = createFileRoute("/")({
   component: Home,
-  validateSearch: (search: Record<string, unknown>) => ({
-    category: (search.category as string) ?? null,
+  validateSearch: (search: Record<string, unknown>): { category?: string } => ({
+    category: typeof search.category === "string" ? search.category : undefined,
   }),
 });
 
@@ -31,8 +31,10 @@ function Home() {
 
       <div className="flex flex-col md:flex-row gap-8 px-8 pb-12">
         <FilterSidebar
-          selectedCategory={category}
-          onSelectCategory={(cat) => navigate({ search: { category: cat } })}
+          selectedCategory={category ?? null}
+          onSelectCategory={(cat) =>
+            navigate({ search: { category: cat ?? undefined } })
+          }
         />
 
         <div className="flex-1">

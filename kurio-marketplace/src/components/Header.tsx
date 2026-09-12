@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "../lib/AuthContext";
+import { Button } from "./ui/button";
 
 export function Header() {
   const { user, clearAuth } = useAuth();
@@ -45,11 +46,10 @@ export function Header() {
             Sair ({user.username})
           </button>
         ) : (
-          <Link
-            to="/entrar"
-            className="bg-accent text-background px-4 py-2 font-medium"
-          >
-            Entrar
+          <Link to="/entrar">
+            <Button className="bg-accent text-background hover:bg-accent-hover">
+              Entrar
+            </Button>
           </Link>
         )}
       </div>

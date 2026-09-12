@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchNftById } from "../api/nfts";
 import { addToCart } from "../api/cart";
 import { useSocket } from "../lib/useSocket";
+import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/nft/$id")({
   component: NftDetail,
@@ -60,17 +61,17 @@ function NftDetail() {
         <p className="text-sm">Coleção: {nft.collection}</p>
         <p className="text-sm">Atributos: {nft.attributes.join(", ")}</p>
 
-        <button
+        <Button
           onClick={() => addToCartMutation.mutate()}
           disabled={addToCartMutation.isPending}
-          className="mt-6 bg-accent text-background px-6 py-3 font-medium disabled:opacity-50"
+          className="mt-6 bg-accent text-background hover:bg-accent-hover"
         >
           {addToCartMutation.isPending
             ? "ADICIONANDO..."
             : addToCartMutation.isSuccess
               ? "ADICIONADO ✓"
               : "COMPRAR"}
-        </button>
+        </Button>
         <button
           onClick={() => socket.emit("simulate:nft-update", id)}
           className="mt-2 text-xs text-text-muted underline"
