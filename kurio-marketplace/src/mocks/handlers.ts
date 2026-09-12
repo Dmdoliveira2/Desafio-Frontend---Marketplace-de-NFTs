@@ -7,8 +7,46 @@ interface CartItem {
   quantity: number;
 }
 
-// Estado do carrinho em memória (simula um "banco de dados" simples)
-let cart: CartItem[] = [];
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  password: string;
+}
+
+interface Order {
+  id: string;
+  items: CartItem[];
+  total: number;
+  status: "pending" | "confirmed";
+  createdAt: string;
+}
+
+let orders: Order[] = loadFromStorage("kurio-mock-orders", []);
+
+// Funções auxiliares de persistência (localStorage)
+function loadFromStorage<T>(key: string, fallback: T): T {
+  const raw = localStorage.getItem(key);
+  return raw ? JSON.parse(raw) : fallback;
+}
+
+function saveToStorage<T>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+let users: User[] = loadFromStorage("kurio-mock-users", []);
+let sessions: Record<string, string> = loadFromStorage(
+  "kurio-mock-sessions",
+  {},
+);
+let cart: CartItem[] = loadFromStorage("kurio-mock-cart", []);
+
+function getUserFromToken(request: Request): User | null {
+  const auth = request.headers.get("Authorization");
+  const token = auth?.replace("Bearer ", "");
+  if (!token || !sessions[token]) return null;
+  return users.find((u) => u.id === sessions[token]) ?? null;
+}
 
 export const handlers = [
   http.get("/api/nfts", () => {
@@ -52,6 +90,7 @@ export const handlers = [
       cart.push({ nft, quantity: body.quantity });
     }
 
+    saveToStorage("kurio-mock-cart", cart);
     return HttpResponse.json({ items: cart });
   }),
 
@@ -68,12 +107,120 @@ export const handlers = [
     }
 
     item.quantity = body.quantity;
+    saveToStorage("kurio-mock-cart", cart);
     return HttpResponse.json({ items: cart });
   }),
 
   // DELETE /api/cart/:id — remover item
   http.delete("/api/cart/:id", ({ params }) => {
     cart = cart.filter((item) => item.nft.id !== params.id);
+    saveToStorage("kurio-mock-cart", cart);
     return HttpResponse.json({ items: cart });
+  }),
+
+  // POST /api/auth/register
+  http.post("/api/auth/register", async ({ request }) => {
+    const body = (await request.json()) as {
+      username: string;
+      email: string;
+      password: string;
+    };
+
+    if (users.some((u) => u.email === body.email)) {
+      return HttpResponse.json(
+        { message: "E-mail já cadastrado" },
+        { status: 409 },
+      );
+    }
+
+    const user: User = {
+      id: String(users.length + 1),
+      username: body.username,
+      email: body.email,
+      password: body.password,
+    };
+    users.push(user);
+
+    const token = `token-${user.id}-${Date.now()}`;
+    sessions[token] = user.id;
+
+    saveToStorage("kurio-mock-users", users);
+    saveToStorage("kurio-mock-sessions", sessions);
+
+    return HttpResponse.json({
+      token,
+      user: { id: user.id, username: user.username, email: user.email },
+    });
+  }),
+
+  // POST /api/auth/login
+  http.post("/api/auth/login", async ({ request }) => {
+    const body = (await request.json()) as { email: string; password: string };
+    const user = users.find(
+      (u) => u.email === body.email && u.password === body.password,
+    );
+
+    if (!user) {
+      return HttpResponse.json(
+        { message: "E-mail ou senha inválidos" },
+        { status: 401 },
+      );
+    }
+
+    const token = `token-${user.id}-${Date.now()}`;
+    sessions[token] = user.id;
+
+    saveToStorage("kurio-mock-sessions", sessions);
+
+    return HttpResponse.json({
+      token,
+      user: { id: user.id, username: user.username, email: user.email },
+    });
+  }),
+
+  // GET /api/auth/session
+  http.get("/api/auth/session", ({ request }) => {
+    const user = getUserFromToken(request);
+    if (!user) {
+      return HttpResponse.json({ message: "Sessão inválida" }, { status: 401 });
+    }
+    return HttpResponse.json({
+      user: { id: user.id, username: user.username, email: user.email },
+    });
+  }),
+
+  // POST /api/auth/logout
+  http.post("/api/auth/logout", ({ request }) => {
+    const auth = request.headers.get("Authorization");
+    const token = auth?.replace("Bearer ", "");
+    if (token) delete sessions[token];
+    saveToStorage("kurio-mock-sessions", sessions);
+    return HttpResponse.json({ success: true });
+  }),
+  // POST /api/orders — criar pedido (finalizar compra)
+  http.post("/api/orders", async () => {
+    if (cart.length === 0) {
+      return HttpResponse.json({ message: "Carrinho vazio" }, { status: 400 });
+    }
+
+    const total =
+      cart.reduce((sum, item) => sum + item.nft.priceEth * item.quantity, 0) +
+      0.016;
+
+    const order: Order = {
+      id: `ORD-${Date.now()}`,
+      items: cart,
+      total,
+      status: "confirmed",
+      createdAt: new Date().toISOString(),
+    };
+
+    orders.push(order);
+    cart = []; // esvazia o carrinho após a compra
+
+    saveToStorage("kurio-mock-orders", orders);
+    saveToStorage("kurio-mock-cart", cart);
+
+    return HttpResponse.json(order);
   }),
 ];

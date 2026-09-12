@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchNftById } from "../api/nfts";
+import { addToCart } from "../api/cart";
 
 export const Route = createFileRoute("/nft/$id")({
   component: NftDetail,
@@ -8,6 +9,7 @@ export const Route = createFileRoute("/nft/$id")({
 
 function NftDetail() {
   const { id } = Route.useParams();
+  const queryClient = useQueryClient();
 
   const {
     data: nft,
@@ -17,6 +19,13 @@ function NftDetail() {
     queryKey: ["nft", id],
     queryFn: () => fetchNftById(id),
     retry: false,
+  });
+
+  const addToCartMutation = useMutation({
+    mutationFn: () => addToCart(id, 1),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
   });
 
   if (isLoading) return <div className="p-8">Carregando...</div>;
@@ -48,8 +57,16 @@ function NftDetail() {
         <p className="text-sm">Coleção: {nft.collection}</p>
         <p className="text-sm">Atributos: {nft.attributes.join(", ")}</p>
 
-        <button className="mt-6 bg-accent text-background px-6 py-3 font-medium">
-          COMPRAR
+        <button
+          onClick={() => addToCartMutation.mutate()}
+          disabled={addToCartMutation.isPending}
+          className="mt-6 bg-accent text-background px-6 py-3 font-medium disabled:opacity-50"
+        >
+          {addToCartMutation.isPending
+            ? "ADICIONANDO..."
+            : addToCartMutation.isSuccess
+              ? "ADICIONADO ✓"
+              : "COMPRAR"}
         </button>
       </div>
     </div>
