@@ -1,0 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-background: #1a0f0a;
+  --color-surface: #2a1810;
+  --color-accent: #d9822b;
+  --color-accent-hover: #c17224;
+  --color-text: #f5e9dc;
+  --color-text-muted: #a89684;
+
+  --font-mono: "Roboto Mono", monospace;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+}
