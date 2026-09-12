@@ -49,6 +49,10 @@ let ordersByUser: Record<string, Order[]> = loadFromStorage(
   "kurio-mock-orders-by-user",
   {},
 );
+let favoritesByUser: Record<string, string[]> = loadFromStorage(
+  "kurio-mock-favorites-by-user",
+  {},
+);
 
 function getUserFromToken(request: Request): User | null {
   const auth = request.headers.get("Authorization");
@@ -66,6 +70,11 @@ function getCartKey(request: Request): string {
 function getCart(key: string): CartItem[] {
   if (!cartByUser[key]) cartByUser[key] = [];
   return cartByUser[key];
+}
+
+function getFavorites(key: string): string[] {
+  if (!favoritesByUser[key]) favoritesByUser[key] = [];
+  return favoritesByUser[key];
 }
 
 export const handlers = [
@@ -162,6 +171,34 @@ export const handlers = [
     }
 
     return HttpResponse.json({ discount });
+  }),
+
+  // GET /api/favorites — lista de ids favoritados do usuário atual
+  http.get("/api/favorites", ({ request }) => {
+    const key = getCartKey(request);
+    return HttpResponse.json({ ids: getFavorites(key) });
+  }),
+
+  // POST /api/favorites — favoritar um NFT
+  http.post("/api/favorites", async ({ request }) => {
+    const key = getCartKey(request);
+    const body = (await request.json()) as { nftId: string };
+    const favorites = getFavorites(key);
+
+    if (!favorites.includes(body.nftId)) {
+      favorites.push(body.nftId);
+    }
+
+    saveToStorage("kurio-mock-favorites-by-user", favoritesByUser);
+    return HttpResponse.json({ ids: favorites });
+  }),
+
+  // DELETE /api/favorites/:id — remover dos favoritos
+  http.delete("/api/favorites/:id", ({ params, request }) => {
+    const key = getCartKey(request);
+    favoritesByUser[key] = getFavorites(key).filter((id) => id !== params.id);
+    saveToStorage("kurio-mock-favorites-by-user", favoritesByUser);
+    return HttpResponse.json({ ids: favoritesByUser[key] });
   }),
 
   // POST /api/auth/register

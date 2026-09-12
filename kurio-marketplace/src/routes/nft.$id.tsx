@@ -4,6 +4,7 @@ import { fetchNftById } from "../api/nfts";
 import { addToCart } from "../api/cart";
 import { useSocket } from "../lib/useSocket";
 import { Button } from "../components/ui/button";
+import { fetchFavorites, addFavorite, removeFavorite } from "../api/favorites";
 
 export const Route = createFileRoute("/nft/$id")({
   component: NftDetail,
@@ -12,6 +13,19 @@ export const Route = createFileRoute("/nft/$id")({
 function NftDetail() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
+  const { data: favoritesData } = useQuery({
+    queryKey: ["favorites"],
+    queryFn: fetchFavorites,
+  });
+
+  const isFavorited = favoritesData?.ids.includes(id) ?? false;
+
+  const favoriteMutation = useMutation({
+    mutationFn: () => (isFavorited ? removeFavorite(id) : addFavorite(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+    },
+  });
 
   const {
     data: nft,
@@ -61,17 +75,27 @@ function NftDetail() {
         <p className="text-sm">Coleção: {nft.collection}</p>
         <p className="text-sm">Atributos: {nft.attributes.join(", ")}</p>
 
-        <Button
-          onClick={() => addToCartMutation.mutate()}
-          disabled={addToCartMutation.isPending}
-          className="mt-6 bg-accent text-background hover:bg-accent-hover"
-        >
-          {addToCartMutation.isPending
-            ? "ADICIONANDO..."
-            : addToCartMutation.isSuccess
-              ? "ADICIONADO ✓"
-              : "COMPRAR"}
-        </Button>
+        <div className="flex gap-3 mt-6">
+          <Button
+            onClick={() => addToCartMutation.mutate()}
+            disabled={addToCartMutation.isPending}
+            className="bg-accent text-background hover:bg-accent-hover"
+          >
+            {addToCartMutation.isPending
+              ? "ADICIONANDO..."
+              : addToCartMutation.isSuccess
+                ? "ADICIONADO ✓"
+                : "COMPRAR"}
+          </Button>
+
+          <Button
+            onClick={() => favoriteMutation.mutate()}
+            variant="outline"
+            className="border-text-muted/30"
+          >
+            {isFavorited ? "❤️ Favoritado" : "🤍 Favoritar"}
+          </Button>
+        </div>
         <button
           onClick={() => socket.emit("simulate:nft-update", id)}
           className="mt-2 text-xs text-text-muted underline"
