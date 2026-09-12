@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "./axiosClient";
 
 export interface User {
   id: string;
@@ -16,7 +16,7 @@ export async function register(
   email: string,
   password: string,
 ): Promise<AuthResponse> {
-  const { data } = await axios.post<AuthResponse>("/api/auth/register", {
+  const { data } = await api.post<AuthResponse>("/api/auth/register", {
     username,
     email,
     password,
@@ -28,22 +28,18 @@ export async function login(
   email: string,
   password: string,
 ): Promise<AuthResponse> {
-  const { data } = await axios.post<AuthResponse>("/api/auth/login", {
+  const { data } = await api.post<AuthResponse>("/api/auth/login", {
     email,
     password,
   });
   return data;
 }
 
-export async function fetchSession(token: string): Promise<{ user: User }> {
-  const { data } = await axios.get<{ user: User }>("/api/auth/session", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function fetchSession(): Promise<{ user: User }> {
+  const { data } = await api.get<{ user: User }>("/api/auth/session");
   return data;
 }
 
-export async function logout(token: string): Promise<void> {
-  await axios.post("/api/auth/logout", null, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function logout(): Promise<void> {
+  await api.post("/api/auth/logout");
 }

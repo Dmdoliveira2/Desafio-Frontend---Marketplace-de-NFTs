@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "./axiosClient";
 import type { Nft } from "../types/nft";
 
 export interface CartItem {
@@ -11,7 +11,7 @@ interface CartResponse {
 }
 
 export async function fetchCart(): Promise<CartResponse> {
-  const { data } = await axios.get<CartResponse>("/api/cart");
+  const { data } = await api.get<CartResponse>("/api/cart");
   return data;
 }
 
@@ -19,7 +19,7 @@ export async function addToCart(
   nftId: string,
   quantity: number,
 ): Promise<CartResponse> {
-  const { data } = await axios.post<CartResponse>("/api/cart", {
+  const { data } = await api.post<CartResponse>("/api/cart", {
     nftId,
     quantity,
   });
@@ -30,13 +30,13 @@ export async function updateCartItem(
   nftId: string,
   quantity: number,
 ): Promise<CartResponse> {
-  const { data } = await axios.patch<CartResponse>(`/api/cart/${nftId}`, {
+  const { data } = await api.patch<CartResponse>(`/api/cart/${nftId}`, {
     quantity,
   });
   return data;
 }
 
 export async function removeFromCart(nftId: string): Promise<CartResponse> {
-  const { data } = await axios.delete<CartResponse>(`/api/cart/${nftId}`);
+  const { data } = await api.delete<CartResponse>(`/api/cart/${nftId}`);
   return data;
 }

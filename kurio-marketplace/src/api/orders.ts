@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "./axiosClient";
 import type { CartItem } from "./cart";
 
 export interface Order {
@@ -10,6 +10,6 @@ export interface Order {
 }
 
 export async function createOrder(): Promise<Order> {
-  const { data } = await axios.post<Order>("/api/orders");
+  const { data } = await api.post<Order>("/api/orders");
   return data;
 }

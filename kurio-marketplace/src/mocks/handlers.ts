@@ -37,14 +37,35 @@ let sessions: Record<string, string> = loadFromStorage(
   "kurio-mock-sessions",
   {},
 );
-let cart: CartItem[] = loadFromStorage("kurio-mock-cart", []);
-let orders: Order[] = loadFromStorage("kurio-mock-orders", []);
+
+// Carrinho e pedidos agora são isolados POR USUÁRIO (chave = id do usuário,
+// ou "guest" para quem ainda não está logado). Isso evita que um usuário
+// veja os dados de outro ao trocar de conta no mesmo navegador.
+let cartByUser: Record<string, CartItem[]> = loadFromStorage(
+  "kurio-mock-cart-by-user",
+  {},
+);
+let ordersByUser: Record<string, Order[]> = loadFromStorage(
+  "kurio-mock-orders-by-user",
+  {},
+);
 
 function getUserFromToken(request: Request): User | null {
   const auth = request.headers.get("Authorization");
   const token = auth?.replace("Bearer ", "");
   if (!token || !sessions[token]) return null;
   return users.find((u) => u.id === sessions[token]) ?? null;
+}
+
+// Retorna a "chave" de isolamento: id do usuário logado, ou "guest"
+function getCartKey(request: Request): string {
+  const user = getUserFromToken(request);
+  return user ? user.id : "guest";
+}
+
+function getCart(key: string): CartItem[] {
+  if (!cartByUser[key]) cartByUser[key] = [];
+  return cartByUser[key];
 }
 
 export const handlers = [
@@ -65,13 +86,16 @@ export const handlers = [
     return HttpResponse.json(nft);
   }),
 
-  // GET /api/cart — ver carrinho atual
-  http.get("/api/cart", () => {
-    return HttpResponse.json({ items: cart });
+  // GET /api/cart — ver carrinho do usuário atual (ou visitante)
+  http.get("/api/cart", ({ request }) => {
+    const key = getCartKey(request);
+    return HttpResponse.json({ items: getCart(key) });
   }),
 
-  // POST /api/cart — adicionar item ao carrinho
+  // POST /api/cart — adicionar item ao carrinho do usuário atual
   http.post("/api/cart", async ({ request }) => {
+    const key = getCartKey(request);
+    const cart = getCart(key);
     const body = (await request.json()) as { nftId: string; quantity: number };
     const nft = nfts.find((n) => n.id === body.nftId);
 
@@ -89,12 +113,14 @@ export const handlers = [
       cart.push({ nft, quantity: body.quantity });
     }
 
-    saveToStorage("kurio-mock-cart", cart);
+    saveToStorage("kurio-mock-cart-by-user", cartByUser);
     return HttpResponse.json({ items: cart });
   }),
 
-  // PATCH /api/cart/:id — alterar quantidade
+  // PATCH /api/cart/:id — alterar quantidade no carrinho do usuário atual
   http.patch("/api/cart/:id", async ({ params, request }) => {
+    const key = getCartKey(request);
+    const cart = getCart(key);
     const body = (await request.json()) as { quantity: number };
     const item = cart.find((item) => item.nft.id === params.id);
 
@@ -106,15 +132,16 @@ export const handlers = [
     }
 
     item.quantity = body.quantity;
-    saveToStorage("kurio-mock-cart", cart);
+    saveToStorage("kurio-mock-cart-by-user", cartByUser);
     return HttpResponse.json({ items: cart });
   }),
 
-  // DELETE /api/cart/:id — remover item
-  http.delete("/api/cart/:id", ({ params }) => {
-    cart = cart.filter((item) => item.nft.id !== params.id);
-    saveToStorage("kurio-mock-cart", cart);
-    return HttpResponse.json({ items: cart });
+  // DELETE /api/cart/:id — remover item do carrinho do usuário atual
+  http.delete("/api/cart/:id", ({ params, request }) => {
+    const key = getCartKey(request);
+    cartByUser[key] = getCart(key).filter((item) => item.nft.id !== params.id);
+    saveToStorage("kurio-mock-cart-by-user", cartByUser);
+    return HttpResponse.json({ items: cartByUser[key] });
   }),
 
   // POST /api/cart/coupon — aplicar cupom
@@ -217,13 +244,17 @@ export const handlers = [
     return HttpResponse.json({ success: true });
   }),
 
-  // POST /api/orders — criar pedido (finalizar compra)
-  http.post("/api/orders", async () => {
+  // POST /api/orders — criar pedido (finalizar compra) do usuário atual
+  http.post("/api/orders", async ({ request }) => {
+    const key = getCartKey(request);
+    const cart = getCart(key);
+
     if (cart.length === 0) {
       return HttpResponse.json({ message: "Carrinho vazio" }, { status: 400 });
     }
 
-    // Cenário de teste: o NFT "Golden Signal #160" (id "9") está sempre esgotado, para permitir testar o fluxo de erro de forma reproduzível
+    // Cenário de teste: o NFT "Golden Signal #160" (id "9") está sempre
+    // esgotado, para permitir testar o fluxo de erro de forma reproduzível
     const shouldFail = cart.some((item) => item.nft.id === "9");
     if (shouldFail) {
       return HttpResponse.json(
@@ -247,11 +278,12 @@ export const handlers = [
       createdAt: new Date().toISOString(),
     };
 
-    orders.push(order);
-    cart = [];
+    if (!ordersByUser[key]) ordersByUser[key] = [];
+    ordersByUser[key].push(order);
+    cartByUser[key] = [];
 
-    saveToStorage("kurio-mock-orders", orders);
-    saveToStorage("kurio-mock-cart", cart);
+    saveToStorage("kurio-mock-orders-by-user", ordersByUser);
+    saveToStorage("kurio-mock-cart-by-user", cartByUser);
 
     return HttpResponse.json(order);
   }),

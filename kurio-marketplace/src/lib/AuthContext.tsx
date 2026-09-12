@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    fetchSession(token)
+    fetchSession()
       .then(({ user }) => setUser(user))
       .catch(() => {
         setToken(null);
