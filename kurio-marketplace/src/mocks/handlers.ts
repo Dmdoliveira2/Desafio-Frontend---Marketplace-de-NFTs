@@ -22,8 +22,6 @@ interface Order {
   createdAt: string;
 }
 
-let orders: Order[] = loadFromStorage("kurio-mock-orders", []);
-
 // Funções auxiliares de persistência (localStorage)
 function loadFromStorage<T>(key: string, fallback: T): T {
   const raw = localStorage.getItem(key);
@@ -40,6 +38,7 @@ let sessions: Record<string, string> = loadFromStorage(
   {},
 );
 let cart: CartItem[] = loadFromStorage("kurio-mock-cart", []);
+let orders: Order[] = loadFromStorage("kurio-mock-orders", []);
 
 function getUserFromToken(request: Request): User | null {
   const auth = request.headers.get("Authorization");
@@ -116,6 +115,26 @@ export const handlers = [
     cart = cart.filter((item) => item.nft.id !== params.id);
     saveToStorage("kurio-mock-cart", cart);
     return HttpResponse.json({ items: cart });
+  }),
+
+  // POST /api/cart/coupon — aplicar cupom
+  http.post("/api/cart/coupon", async ({ request }) => {
+    const body = (await request.json()) as { code: string };
+
+    const validCoupons: Record<string, number> = {
+      KURIO10: 0.1, // 10% de desconto
+    };
+
+    const discount = validCoupons[body.code.toUpperCase()];
+
+    if (!discount) {
+      return HttpResponse.json(
+        { message: "Cupom inválido ou expirado" },
+        { status: 400 },
+      );
+    }
+
+    return HttpResponse.json({ discount });
   }),
 
   // POST /api/auth/register
@@ -197,10 +216,23 @@ export const handlers = [
     saveToStorage("kurio-mock-sessions", sessions);
     return HttpResponse.json({ success: true });
   }),
+
   // POST /api/orders — criar pedido (finalizar compra)
   http.post("/api/orders", async () => {
     if (cart.length === 0) {
       return HttpResponse.json({ message: "Carrinho vazio" }, { status: 400 });
+    }
+
+    // Cenário de teste: o NFT "Golden Signal #160" (id "9") está sempre esgotado, para permitir testar o fluxo de erro de forma reproduzível
+    const shouldFail = cart.some((item) => item.nft.id === "9");
+    if (shouldFail) {
+      return HttpResponse.json(
+        {
+          message:
+            "Um dos itens do carrinho não está mais disponível. Revise seu carrinho.",
+        },
+        { status: 409 },
+      );
     }
 
     const total =
@@ -216,7 +248,7 @@ export const handlers = [
     };
 
     orders.push(order);
-    cart = []; // esvazia o carrinho após a compra
+    cart = [];
 
     saveToStorage("kurio-mock-orders", orders);
     saveToStorage("kurio-mock-cart", cart);

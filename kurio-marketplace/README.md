@@ -52,6 +52,13 @@ Não existem usuários pré-cadastrados. Para testar o fluxo completo, crie uma 
 | `npx playwright test`        | Executa os testes E2E (sobe o servidor automaticamente) |
 | `npx playwright show-report` | Abre o relatório HTML do último teste rodado            |
 
+## Reproduzindo cenários de falha
+
+- **Falha de indisponibilidade na compra:** adicione o NFT **"Golden Signal #160"** ao carrinho e tente finalizar a compra — esse item está configurado para sempre retornar erro 409 (indisponível), permitindo testar de forma determinística o tratamento de erro na tela de checkout.
+- **Cupom inválido:** qualquer código diferente de `KURIO10` no campo de cupom retorna erro de "cupom inválido ou expirado".
+- **Sessão inválida/expirada:** qualquer rota protegida (checkout, perfil) sem um token válido no `localStorage` retorna 401 e a aplicação redireciona para o login.
+- **NFT/rota inexistente:** acessar `/nft/999` (ou qualquer id inválido) exibe a mensagem de "NFT não encontrado".
+
 ## Resetando os dados simulados
 
 Como o "banco de dados" da aplicação é mockado e persistido no `localStorage` do navegador (para sobreviver a atualizações de página), para resetar completamente o estado (usuários, sessão, carrinho, pedidos) para um cenário limpo:
