@@ -22,6 +22,15 @@ interface Order {
   createdAt: string;
 }
 
+interface Wallet {
+  id: string;
+  nickname: string;
+  address: string;
+  network: string;
+  type: string;
+  isPrimary: boolean;
+}
+
 // Funções auxiliares de persistência (localStorage)
 function loadFromStorage<T>(key: string, fallback: T): T {
   const raw = localStorage.getItem(key);
@@ -38,9 +47,8 @@ let sessions: Record<string, string> = loadFromStorage(
   {},
 );
 
-// Carrinho e pedidos agora são isolados POR USUÁRIO (chave = id do usuário,
-// ou "guest" para quem ainda não está logado). Isso evita que um usuário
-// veja os dados de outro ao trocar de conta no mesmo navegador.
+// Carrinho, pedidos, favoritos e carteiras são isolados POR USUÁRIO
+// (chave = id do usuário, ou "guest" para quem ainda não está logado).
 let cartByUser: Record<string, CartItem[]> = loadFromStorage(
   "kurio-mock-cart-by-user",
   {},
@@ -51,6 +59,10 @@ let ordersByUser: Record<string, Order[]> = loadFromStorage(
 );
 let favoritesByUser: Record<string, string[]> = loadFromStorage(
   "kurio-mock-favorites-by-user",
+  {},
+);
+let walletsByUser: Record<string, Wallet[]> = loadFromStorage(
+  "kurio-mock-wallets-by-user",
   {},
 );
 
@@ -75,6 +87,11 @@ function getCart(key: string): CartItem[] {
 function getFavorites(key: string): string[] {
   if (!favoritesByUser[key]) favoritesByUser[key] = [];
   return favoritesByUser[key];
+}
+
+function getWallets(key: string): Wallet[] {
+  if (!walletsByUser[key]) walletsByUser[key] = [];
+  return walletsByUser[key];
 }
 
 export const handlers = [
@@ -158,7 +175,7 @@ export const handlers = [
     const body = (await request.json()) as { code: string };
 
     const validCoupons: Record<string, number> = {
-      KURIO10: 0.1, // 10% de desconto
+      KURIO10: 0.1,
     };
 
     const discount = validCoupons[body.code.toUpperCase()];
@@ -199,6 +216,68 @@ export const handlers = [
     favoritesByUser[key] = getFavorites(key).filter((id) => id !== params.id);
     saveToStorage("kurio-mock-favorites-by-user", favoritesByUser);
     return HttpResponse.json({ ids: favoritesByUser[key] });
+  }),
+
+  // GET /api/wallets — listar carteiras do usuário atual
+  http.get("/api/wallets", ({ request }) => {
+    const key = getCartKey(request);
+    return HttpResponse.json({ wallets: getWallets(key) });
+  }),
+
+  // POST /api/wallets — cadastrar carteira
+  http.post("/api/wallets", async ({ request }) => {
+    const key = getCartKey(request);
+    const body = (await request.json()) as {
+      nickname: string;
+      address: string;
+      network: string;
+      type: string;
+    };
+
+    if (
+      !body.address ||
+      !body.address.startsWith("0x") ||
+      body.address.length < 10
+    ) {
+      return HttpResponse.json(
+        { message: "Endereço de carteira inválido" },
+        { status: 400 },
+      );
+    }
+
+    const wallets = getWallets(key);
+    const wallet: Wallet = {
+      id: `wallet-${Date.now()}`,
+      nickname: body.nickname,
+      address: body.address,
+      network: body.network,
+      type: body.type,
+      isPrimary: wallets.length === 0,
+    };
+
+    wallets.push(wallet);
+    saveToStorage("kurio-mock-wallets-by-user", walletsByUser);
+    return HttpResponse.json({ wallets });
+  }),
+
+  // PATCH /api/wallets/:id — atualizar carteira
+  http.patch("/api/wallets/:id", async ({ params, request }) => {
+    const key = getCartKey(request);
+    const wallets = getWallets(key);
+    const wallet = wallets.find((w) => w.id === params.id);
+
+    if (!wallet) {
+      return HttpResponse.json(
+        { message: "Carteira não encontrada" },
+        { status: 404 },
+      );
+    }
+
+    const body = (await request.json()) as Partial<Wallet>;
+    Object.assign(wallet, body);
+
+    saveToStorage("kurio-mock-wallets-by-user", walletsByUser);
+    return HttpResponse.json({ wallets });
   }),
 
   // POST /api/auth/register
