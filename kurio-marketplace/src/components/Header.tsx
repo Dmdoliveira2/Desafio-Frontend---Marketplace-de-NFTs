@@ -85,13 +85,18 @@ export function Header() {
         </Link>
 
         {user ? (
-          <Button
-            variant="ghost"
-            onClick={() => clearAuth()}
-            className="text-sm"
-          >
-            Sair ({user.username})
-          </Button>
+          <>
+            <Link to="/carteiras" className="text-sm hover:text-accent">
+              Carteiras
+            </Link>
+            <Button
+              variant="ghost"
+              onClick={() => clearAuth()}
+              className="text-sm"
+            >
+              Sair ({user.username})
+            </Button>
+          </>
         ) : (
           <Link to="/entrar">
             <Button className="bg-accent text-background hover:bg-accent-hover rounded-lg flex items-center gap-1.5">

@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchNftById } from "../api/nfts";
 import { addToCart } from "../api/cart";
-import { useSocket } from "../lib/useSocket";
 import { Button } from "../components/ui/button";
 import { fetchFavorites, addFavorite, removeFavorite } from "../api/favorites";
 
@@ -36,8 +35,6 @@ function NftDetail() {
     queryFn: () => fetchNftById(id),
     retry: false,
   });
-
-  const socket = useSocket();
 
   const addToCartMutation = useMutation({
     mutationFn: () => addToCart(id, 1),
@@ -96,12 +93,6 @@ function NftDetail() {
             {isFavorited ? "❤️ Favoritado" : "🤍 Favoritar"}
           </Button>
         </div>
-        <button
-          onClick={() => socket.emit("simulate:nft-update", id)}
-          className="mt-2 text-xs text-text-muted underline"
-        >
-          [TESTE] Simular mudança de preço
-        </button>
       </div>
     </div>
   );

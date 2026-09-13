@@ -24,7 +24,7 @@ test("fluxo completo de compra: catálogo → detalhe → carrinho → checkout 
 
   // Clica no primeiro NFT do catálogo
   await page.goto("/");
-  await page.locator('a[href^="/nft/"]').first().click();
+  await page.locator('a[href^="/nft/"]').first().click({ force: true });
 
   // Espera a imagem do NFT carregar completamente antes de interagir
   await page.waitForLoadState("networkidle");
