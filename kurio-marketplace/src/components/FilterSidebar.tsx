@@ -9,6 +9,10 @@ const categories = [
   { name: "Música", count: 65 },
   { name: "Arte 3D", count: 39 },
   { name: "Colecionáveis", count: 23 },
+  { name: "Generativa", count: 17 },
+  { name: "Jogos", count: 19 },
+  { name: "Assinaturas", count: 13 },
+  { name: "Utilidade", count: 18 },
 ];
 
 export function FilterSidebar({

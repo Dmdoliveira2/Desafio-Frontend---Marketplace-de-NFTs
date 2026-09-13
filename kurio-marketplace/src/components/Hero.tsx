@@ -13,7 +13,7 @@ export function Hero() {
           Colecione arte digital rara, apoie artistas e tenha uma parte da
           cultura da internet.
         </p>
-        <button className="mt-6 bg-accent text-background px-6 py-3 font-medium">
+        <button className="mt-6 bg-accent text-background px-6 py-3 font-medium rounded-lg">
           EXPLORAR
         </button>
       </div>
@@ -21,7 +21,7 @@ export function Hero() {
       <img
         src={heroImage}
         alt="NFT em destaque"
-        className="w-full aspect-square object-cover"
+        className="w-full aspect-square object-cover rounded-lg"
       />
     </section>
   );
