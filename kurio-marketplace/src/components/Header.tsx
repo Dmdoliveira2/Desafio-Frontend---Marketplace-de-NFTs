@@ -94,7 +94,7 @@ export function Header() {
           </Button>
         ) : (
           <Link to="/entrar">
-            <Button className="bg-accent text-background hover:bg-accent-hover rounded-full flex items-center gap-1.5">
+            <Button className="bg-accent text-background hover:bg-accent-hover rounded-lg flex items-center gap-1.5">
               <LogIn size={16} /> Entrar
             </Button>
           </Link>

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
+import { Route as CarteirasRouteImport } from './routes/carteiras'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ConfirmacaoRouteImport } from './routes/confirmacao'
 import { Route as EntrarRouteImport } from './routes/entrar'
@@ -31,6 +32,11 @@ const CadastroRoute = CadastroRouteImport.update({
 const CarrinhoRoute = CarrinhoRouteImport.update({
   id: '/carrinho',
   path: '/carrinho',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarteirasRoute = CarteirasRouteImport.update({
+  id: '/carteiras',
+  path: '/carteiras',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
+  '/carteiras': typeof CarteirasRoute
   '/checkout': typeof CheckoutRoute
   '/confirmacao': typeof ConfirmacaoRoute
   '/entrar': typeof EntrarRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
+  '/carteiras': typeof CarteirasRoute
   '/checkout': typeof CheckoutRoute
   '/confirmacao': typeof ConfirmacaoRoute
   '/entrar': typeof EntrarRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
+  '/carteiras': typeof CarteirasRoute
   '/checkout': typeof CheckoutRoute
   '/confirmacao': typeof ConfirmacaoRoute
   '/entrar': typeof EntrarRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cadastro'
     | '/carrinho'
+    | '/carteiras'
     | '/checkout'
     | '/confirmacao'
     | '/entrar'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cadastro'
     | '/carrinho'
+    | '/carteiras'
     | '/checkout'
     | '/confirmacao'
     | '/entrar'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cadastro'
     | '/carrinho'
+    | '/carteiras'
     | '/checkout'
     | '/confirmacao'
     | '/entrar'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CadastroRoute: typeof CadastroRoute
   CarrinhoRoute: typeof CarrinhoRoute
+  CarteirasRoute: typeof CarteirasRoute
   CheckoutRoute: typeof CheckoutRoute
   ConfirmacaoRoute: typeof ConfirmacaoRoute
   EntrarRoute: typeof EntrarRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/carrinho'
       fullPath: '/carrinho'
       preLoaderRoute: typeof CarrinhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carteiras': {
+      id: '/carteiras'
+      path: '/carteiras'
+      fullPath: '/carteiras'
+      preLoaderRoute: typeof CarteirasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CadastroRoute: CadastroRoute,
   CarrinhoRoute: CarrinhoRoute,
+  CarteirasRoute: CarteirasRoute,
   CheckoutRoute: CheckoutRoute,
   ConfirmacaoRoute: ConfirmacaoRoute,
   EntrarRoute: EntrarRoute,
